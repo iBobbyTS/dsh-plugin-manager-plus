@@ -9,7 +9,8 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { loadRegistry } from './registry.ts'
 import {
@@ -29,6 +30,7 @@ import { verifyActivation } from './verify.ts'
 import { enqueueOp, waitForTurn, settleOp, isRunning, listOps, killOp, clearOps, appendOpOutput, findActiveOp } from './op-queue.ts'
 import { classifyProvenance } from './provenance.ts'
 import { exportSyncManifest, readSyncConfig, writeSyncConfig, diffManifest, restoreTarget, testConnection, pushManifest, pullManifest, validateConfig, unpackLocalPlugin, type SyncManifest } from './sync.ts'
+import { buildInstallHelpPrompt, buildSyncHelpPrompt, type InstallFailureContext, type SyncFailureContext } from './help-prompt.ts'
 
 export type { LoaderEntry } from './themes.ts'
 export type { UpdateStatus } from './updates.ts'
@@ -55,6 +57,47 @@ function ensurePatchInsert(profile: string, name: string): void {
 /** Escape a string for use inside a RegExp. */
 function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** The installed plugin-manager package version (best effort). */
+function pluginManagerVersion(): string {
+  try {
+    const file = fileURLToPath(new URL('../package.json', import.meta.url))
+    const pkg = JSON.parse(readFileSync(file, 'utf8')) as { version?: string }
+    return pkg.version ?? 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
+
+/** The running dsh core version (best effort across install layouts). */
+function dshVersion(): string {
+  const candidates: string[] = []
+  // 1. The process that launched this host (node bin.js) — walk up from argv[1].
+  try {
+    const bin = process.argv[1]
+    if (typeof bin === 'string' && bin.length > 0) {
+      let dir = dirname(bin)
+      for (let depth = 0; depth < 6; depth++) {
+        candidates.push(join(dir, 'package.json'))
+        dir = dirname(dir)
+      }
+    }
+  } catch { /* ignore */ }
+  // 2. Profile-local installs (desktop shell server/ or npm global).
+  candidates.push(
+    join(profileDir('web'), 'node_modules', '@deepseek-ai', 'dsh', 'package.json'),
+    join(process.env.APPDATA ?? '', 'npm', 'node_modules', '@deepseek-ai', 'dsh', 'package.json'),
+  )
+  for (const file of candidates) {
+    try {
+      if (existsSync(file)) {
+        const pkg = JSON.parse(readFileSync(file, 'utf8')) as { version?: string; name?: string }
+        if (pkg.name === '@deepseek-ai/dsh' && typeof pkg.version === 'string') return pkg.version
+      }
+    } catch { /* try next */ }
+  }
+  return 'unknown'
 }
 
 export interface WebServerService {
@@ -738,6 +781,74 @@ export function mountMarketRoutes(host: MarketHost, config: MarketConfig): () =>
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
           logEvent('error', 'approve-builds', `route error: ${message}`)
+          sendJson(response, 500, { error: message })
+        }
+      },
+    }),
+
+    // ★ Help prompt: build a self-contained prompt for a new conversation
+    // when an operation fails (install / sync backup / sync restore).
+    host.webServer.register({
+      kind: 'exact',
+      path: '/plugin-manager/help-prompt',
+      handler: async (request, response) => {
+        if (request.method !== 'POST') {
+          response.writeHead(405, { allow: 'POST' })
+          response.end()
+          return
+        }
+        if (!sameOrigin(request)) {
+          sendJson(response, 403, { error: 'untrusted origin' })
+          return
+        }
+        try {
+          const body = (await readJsonBody(request)) as {
+            kind?: 'install' | 'sync'
+            install?: Partial<InstallFailureContext>
+            sync?: Partial<SyncFailureContext>
+          }
+          const pmVersion = pluginManagerVersion()
+          if (body.kind === 'install' && body.install) {
+            const installed: InstallFailureContext['installed'] = Object.entries(readInstalled(config.profile))
+              .map(([name, spec]) => ({
+                name,
+                spec: String(spec),
+                repoUrl: readInstalledRepo(config.profile, name),
+              }))
+            const prompt = buildInstallHelpPrompt({
+              pluginName: body.install.pluginName ?? '未知插件',
+              pluginUrl: body.install.pluginUrl ?? '',
+              profile: config.profile,
+              exitCode: typeof body.install.exitCode === 'number' ? body.install.exitCode : null,
+              timedOut: body.install.timedOut === true,
+              output: typeof body.install.output === 'string' ? body.install.output : '',
+              blockedBuilds: Array.isArray(body.install.blockedBuilds) ? body.install.blockedBuilds.map(String) : [],
+              installed,
+              dshVersion: dshVersion(),
+              pluginManagerVersion: pmVersion,
+            })
+            sendJson(response, 200, { prompt })
+            return
+          }
+          if (body.kind === 'sync' && body.sync) {
+            const prompt = buildSyncHelpPrompt({
+              action: body.sync.action === 'restore' ? 'restore' : 'backup',
+              repo: body.sync.repo ?? '',
+              branch: body.sync.branch ?? 'main',
+              errorCode: body.sync.errorCode ?? 'unknown',
+              errorMessage: body.sync.errorMessage ?? '',
+              hint: body.sync.hint ?? '',
+              localPlugins: Array.isArray(body.sync.localPlugins) ? body.sync.localPlugins.map(String) : [],
+              profile: config.profile,
+              dshVersion: dshVersion(),
+              pluginManagerVersion: pmVersion,
+            })
+            sendJson(response, 200, { prompt })
+            return
+          }
+          sendJson(response, 400, { error: 'kind or context missing' })
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
           sendJson(response, 500, { error: message })
         }
       },

@@ -476,91 +476,217 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 			document.head.appendChild(tag);
 		}
 		var Market_module_css_default = {
-			"sub": "kTvk8q_sub",
-			"cmdSummary": "kTvk8q_cmdSummary",
-			"dot": "kTvk8q_dot",
+			"restart": "kTvk8q_restart",
+			"barFill": "kTvk8q_barFill",
+			"grow": "kTvk8q_grow",
+			"empty": "kTvk8q_empty",
+			"filterGroup": "kTvk8q_filterGroup",
+			"cmd": "kTvk8q_cmd",
+			"pageBtn": "kTvk8q_pageBtn",
+			"cancelBtn": "kTvk8q_cancelBtn",
+			"cmdDetails": "kTvk8q_cmdDetails",
+			"dangerArmed": "kTvk8q_dangerArmed",
+			"themesGrid": "kTvk8q_themesGrid",
+			"pagerPages": "kTvk8q_pagerPages",
+			"pct": "kTvk8q_pct",
+			"catsToggle": "kTvk8q_catsToggle",
+			"tabs": "kTvk8q_tabs",
+			"card": "kTvk8q_card",
+			"err": "kTvk8q_err",
+			"catsRow": "kTvk8q_catsRow",
+			"src": "kTvk8q_src",
+			"searchInline": "kTvk8q_searchInline",
+			"pageInfo": "kTvk8q_pageInfo",
+			"filterOption": "kTvk8q_filterOption",
+			"localBadge": "kTvk8q_localBadge",
+			"row1": "kTvk8q_row1",
+			"head": "kTvk8q_head",
+			"grid": "kTvk8q_grid",
+			"dshmSlide": "kTvk8q_dshmSlide",
+			"staleAction": "kTvk8q_staleAction",
+			"catsCollapsed": "kTvk8q_catsCollapsed",
+			"owner": "kTvk8q_owner",
+			"act": "kTvk8q_act",
+			"swatches": "kTvk8q_swatches",
+			"sect": "kTvk8q_sect",
 			"foot": "kTvk8q_foot",
 			"dangerBtn": "kTvk8q_dangerBtn",
-			"catsRow": "kTvk8q_catsRow",
-			"cmdDetails": "kTvk8q_cmdDetails",
-			"err": "kTvk8q_err",
-			"cmd": "kTvk8q_cmd",
-			"actWhy": "kTvk8q_actWhy",
-			"bar": "kTvk8q_bar",
-			"root": "kTvk8q_root",
-			"themesGrid": "kTvk8q_themesGrid",
-			"pager": "kTvk8q_pager",
-			"pageEllipsis": "kTvk8q_pageEllipsis",
-			"descTight": "kTvk8q_descTight",
-			"star": "kTvk8q_star",
-			"loading": "kTvk8q_loading",
-			"pagerPages": "kTvk8q_pagerPages",
-			"filterOption": "kTvk8q_filterOption",
-			"cats": "kTvk8q_cats",
-			"actWarn": "kTvk8q_actWarn",
-			"progress": "kTvk8q_progress",
-			"sp": "kTvk8q_sp",
-			"desc": "kTvk8q_desc",
-			"spec": "kTvk8q_spec",
-			"pageBtn": "kTvk8q_pageBtn",
-			"barWave": "kTvk8q_barWave",
-			"top": "kTvk8q_top",
-			"linkName": "kTvk8q_linkName",
-			"body": "kTvk8q_body",
-			"okState": "kTvk8q_okState",
-			"sizeLabel": "kTvk8q_sizeLabel",
-			"irow": "kTvk8q_irow",
-			"titleRow": "kTvk8q_titleRow",
-			"empty": "kTvk8q_empty",
-			"title": "kTvk8q_title",
-			"grow": "kTvk8q_grow",
-			"filterTitle": "kTvk8q_filterTitle",
-			"spin": "kTvk8q_spin",
-			"restart": "kTvk8q_restart",
-			"card": "kTvk8q_card",
-			"dangerArmed": "kTvk8q_dangerArmed",
-			"pagerSize": "kTvk8q_pagerSize",
-			"filterPanel": "kTvk8q_filterPanel",
-			"filterGroup": "kTvk8q_filterGroup",
-			"sizeOn": "kTvk8q_sizeOn",
-			"head": "kTvk8q_head",
-			"cancelBtn": "kTvk8q_cancelBtn",
-			"staleAction": "kTvk8q_staleAction",
-			"officialBadge": "kTvk8q_officialBadge",
-			"sect": "kTvk8q_sect",
-			"filterBtn": "kTvk8q_filterBtn",
-			"tabs": "kTvk8q_tabs",
 			"actLive": "kTvk8q_actLive",
-			"barFill": "kTvk8q_barFill",
-			"pageOn": "kTvk8q_pageOn",
-			"pageInfo": "kTvk8q_pageInfo",
-			"catsWrap": "kTvk8q_catsWrap",
-			"filterWrap": "kTvk8q_filterWrap",
-			"dshmSlide": "kTvk8q_dshmSlide",
-			"localSpec": "kTvk8q_localSpec",
-			"modalNote": "kTvk8q_modalNote",
-			"catsToggle": "kTvk8q_catsToggle",
-			"av": "kTvk8q_av",
-			"pct": "kTvk8q_pct",
-			"searchInline": "kTvk8q_searchInline",
-			"swatches": "kTvk8q_swatches",
-			"src": "kTvk8q_src",
-			"act": "kTvk8q_act",
-			"on": "kTvk8q_on",
-			"tag": "kTvk8q_tag",
-			"warnLine": "kTvk8q_warnLine",
-			"warnBtn": "kTvk8q_warnBtn",
-			"grid": "kTvk8q_grid",
-			"actBroken": "kTvk8q_actBroken",
-			"filterBtnOn": "kTvk8q_filterBtnOn",
-			"nm": "kTvk8q_nm",
-			"owner": "kTvk8q_owner",
+			"okState": "kTvk8q_okState",
+			"cats": "kTvk8q_cats",
 			"tab": "kTvk8q_tab",
+			"progress": "kTvk8q_progress",
+			"pagerSize": "kTvk8q_pagerSize",
+			"actBroken": "kTvk8q_actBroken",
+			"spec": "kTvk8q_spec",
+			"modalNote": "kTvk8q_modalNote",
+			"actWarn": "kTvk8q_actWarn",
+			"sizeLabel": "kTvk8q_sizeLabel",
+			"nm": "kTvk8q_nm",
+			"body": "kTvk8q_body",
+			"filterWrap": "kTvk8q_filterWrap",
+			"dot": "kTvk8q_dot",
+			"bar": "kTvk8q_bar",
+			"barWave": "kTvk8q_barWave",
+			"filterBtnOn": "kTvk8q_filterBtnOn",
+			"localSpec": "kTvk8q_localSpec",
+			"tag": "kTvk8q_tag",
+			"title": "kTvk8q_title",
+			"descTight": "kTvk8q_descTight",
+			"pageOn": "kTvk8q_pageOn",
+			"filterTitle": "kTvk8q_filterTitle",
+			"pageEllipsis": "kTvk8q_pageEllipsis",
+			"titleRow": "kTvk8q_titleRow",
+			"catsWrap": "kTvk8q_catsWrap",
+			"warnLine": "kTvk8q_warnLine",
+			"av": "kTvk8q_av",
+			"star": "kTvk8q_star",
+			"actWhy": "kTvk8q_actWhy",
+			"irow": "kTvk8q_irow",
+			"pager": "kTvk8q_pager",
+			"top": "kTvk8q_top",
+			"filterPanel": "kTvk8q_filterPanel",
+			"cmdSummary": "kTvk8q_cmdSummary",
+			"sp": "kTvk8q_sp",
+			"loading": "kTvk8q_loading",
+			"spin": "kTvk8q_spin",
+			"sub": "kTvk8q_sub",
+			"desc": "kTvk8q_desc",
+			"root": "kTvk8q_root",
+			"warnBtn": "kTvk8q_warnBtn",
 			"sizeBtn": "kTvk8q_sizeBtn",
-			"catsCollapsed": "kTvk8q_catsCollapsed",
-			"localBadge": "kTvk8q_localBadge",
-			"row1": "kTvk8q_row1"
+			"on": "kTvk8q_on",
+			"officialBadge": "kTvk8q_officialBadge",
+			"sizeOn": "kTvk8q_sizeOn",
+			"linkName": "kTvk8q_linkName",
+			"filterBtn": "kTvk8q_filterBtn"
 		};
+		//#endregion
+		//#region src/client/HelpPromptDialog.tsx
+		/**
+		* HelpPromptDialog: shown when an operation (install / sync backup /
+		* sync restore) fails. Calls the host /plugin-manager/help-prompt route to
+		* build a self-contained prompt, displays it, and offers one-click copy so
+		* the user can paste it into a NEW conversation for assistance.
+		*/
+		function HelpPromptDialog({ open, kind, install, sync, onClose }) {
+			const [prompt, setPrompt] = (0, react.useState)(null);
+			const [loading, setLoading] = (0, react.useState)(false);
+			const [copied, setCopied] = (0, react.useState)(false);
+			const [error, setError] = (0, react.useState)(null);
+			const loadPrompt = (0, react.useCallback)(async () => {
+				setLoading(true);
+				setError(null);
+				setCopied(false);
+				try {
+					const data = await (await fetch("/plugin-manager/help-prompt", {
+						method: "POST",
+						headers: { "content-type": "application/json" },
+						body: JSON.stringify(kind === "install" ? {
+							kind: "install",
+							install
+						} : {
+							kind: "sync",
+							sync
+						})
+					})).json();
+					if (data.prompt) setPrompt(data.prompt);
+					else setError(data.error || "无法生成帮助提示词");
+				} catch {
+					setError("无法生成帮助提示词（网络错误）");
+				}
+				setLoading(false);
+			}, [
+				kind,
+				install,
+				sync
+			]);
+			const copyPrompt = (0, react.useCallback)(async () => {
+				if (prompt === null) return;
+				try {
+					await navigator.clipboard.writeText(prompt);
+					setCopied(true);
+					setTimeout(() => setCopied(false), 2e3);
+				} catch {
+					const ta = document.createElement("textarea");
+					ta.value = prompt;
+					document.body.appendChild(ta);
+					ta.select();
+					document.execCommand("copy");
+					document.body.removeChild(ta);
+					setCopied(true);
+					setTimeout(() => setCopied(false), 2e3);
+				}
+			}, [prompt]);
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+				open,
+				onClose,
+				title: kind === "install" ? "发起新对话寻求安装帮助" : "发起新对话寻求同步帮助",
+				footer: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "outline",
+					size: "sm",
+					onClick: onClose,
+					children: "关闭"
+				}), prompt !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "primary",
+					size: "sm",
+					onClick: copyPrompt,
+					children: copied ? "✓ 已复制" : "复制提示词"
+				})] }),
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						fontSize: 13,
+						lineHeight: "20px"
+					},
+					children: [
+						prompt === null && !loading && error === null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+							style: { margin: "0 0 12px" },
+							children: [
+								"点击下方按钮生成一份包含错误信息的帮助提示词，复制后打开",
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "新对话" }),
+								"粘贴即可获得诊断与解决方案。"
+							]
+						}),
+						loading && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: { color: "var(--dsw-alias-label-secondary,#6b7280)" },
+							children: "正在生成提示词…"
+						}),
+						error !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: { color: "var(--dsw-alias-state-error-primary,#dc2626)" },
+							children: error
+						}),
+						prompt === null && !loading && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							variant: "primary",
+							size: "sm",
+							onClick: loadPrompt,
+							children: "生成提示词"
+						}),
+						prompt !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", {
+							style: {
+								maxHeight: 320,
+								overflow: "auto",
+								whiteSpace: "pre-wrap",
+								wordBreak: "break-word",
+								fontSize: 12,
+								lineHeight: "18px",
+								background: "var(--dsw-alias-bg-layer-2,#f3f4f6)",
+								borderRadius: 8,
+								padding: 12,
+								margin: "0 0 8px"
+							},
+							children: prompt
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							style: {
+								fontSize: 12,
+								color: "var(--dsw-alias-label-tertiary,#9ca3af)",
+								margin: 0
+							},
+							children: "已复制后，新建一个会话并粘贴即可。提示词已脱敏（不含任何 Token）。"
+						})] })
+					]
+				})
+			});
+		}
 		//#endregion
 		//#region src/client/SyncTab.tsx
 		/**
@@ -575,6 +701,8 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 			const [busy, setBusy] = (0, react.useState)(null);
 			const [status, setStatus] = (0, react.useState)(null);
 			const [error, setError] = (0, react.useState)(null);
+			const [syncHelp, setSyncHelp] = (0, react.useState)(null);
+			const [helpOpen, setHelpOpen] = (0, react.useState)(false);
 			(0, react.useEffect)(() => {
 				fetch("/plugin-manager/sync-config", { cache: "no-store" }).then((r) => r.json()).then((cfg) => {
 					setConfig(cfg);
@@ -665,10 +793,20 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 							ok: true,
 							text: includeLocal ? `${t("syncBackupOk")}（含本地插件文件）` : t("syncBackupOk")
 						});
-					} else setStatus({
-						ok: false,
-						text: data.error?.message || "备份失败"
-					});
+					} else {
+						const syncErr = data.error;
+						setStatus({
+							ok: false,
+							text: syncErr?.message || "备份失败"
+						});
+						if (syncErr) setSyncHelp({
+							action: "backup",
+							errorCode: syncErr.code,
+							errorMessage: syncErr.message,
+							hint: syncErr.hint,
+							localPlugins: []
+						});
+					}
 				} catch {
 					setStatus({
 						ok: false,
@@ -713,10 +851,20 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 							ok: false,
 							text: "已取消还原"
 						});
-					} else setStatus({
-						ok: false,
-						text: data.error?.message || "拉取失败"
-					});
+					} else {
+						const syncErr = data.error;
+						setStatus({
+							ok: false,
+							text: syncErr?.message || "拉取失败"
+						});
+						if (syncErr) setSyncHelp({
+							action: "restore",
+							errorCode: syncErr.code,
+							errorMessage: syncErr.message,
+							hint: syncErr.hint,
+							localPlugins: []
+						});
+					}
 				} catch {
 					setStatus({
 						ok: false,
@@ -904,12 +1052,20 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 									})
 								]
 							}),
-							status && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							status && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								style: {
 									fontSize: 12,
 									color: status.ok ? "var(--dsw-alias-state-success-primary,#16a34a)" : "var(--dsw-alias-state-error-primary,#dc2626)"
 								},
-								children: status.text
+								children: [status.text, !status.ok && syncHelp !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									style: { marginTop: 6 },
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+										size: "sm",
+										variant: "outline",
+										onClick: () => setHelpOpen(true),
+										children: "发起新对话寻求帮助"
+									})
+								})]
 							}),
 							error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 								style: {
@@ -950,6 +1106,16 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 							": ",
 							new Date(config.lastSyncAt).toLocaleString()
 						]
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(HelpPromptDialog, {
+						open: helpOpen,
+						kind: "sync",
+						sync: syncHelp !== null ? {
+							...syncHelp,
+							repo,
+							branch
+						} : void 0,
+						onClose: () => setHelpOpen(false)
 					})
 				]
 			});
@@ -1111,6 +1277,8 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 			const idleStrikes = (0, react.useRef)(0);
 			const [doneUrls, setDoneUrls] = (0, react.useState)([]);
 			const [installError, setInstallError] = (0, react.useState)(null);
+			const [installFail, setInstallFail] = (0, react.useState)(null);
+			const [helpOpen, setHelpOpen] = (0, react.useState)(false);
 			const [updates, setUpdates] = (0, react.useState)({});
 			const [updatingName, setUpdatingName] = (0, react.useState)(null);
 			const [staleName, setStaleName] = (0, react.useState)(null);
@@ -1400,6 +1568,14 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 						const text = (v) => typeof v === "string" ? v : v && typeof v.text === "string" ? v.text : v == null ? "" : JSON.stringify(v);
 						const detail = text(body.error) || [text(body.stderr), text(body.stdout)].filter(Boolean).join("\n").trim() || "exit " + body.exitCode;
 						setInstallError(t("installFail") + ": " + plugin.name + " — " + detail.trim().slice(-600));
+						setInstallFail({
+							pluginName: plugin.name,
+							pluginUrl: plugin.url,
+							exitCode: typeof body.exitCode === "number" ? body.exitCode : null,
+							timedOut: body.timedOut === true,
+							output: detail,
+							blockedBuilds: Array.isArray(body.ignoredBuilds) ? body.ignoredBuilds.map(String) : []
+						});
 					}
 				}).catch((error) => {
 					sessionStorage.removeItem("dshm-pending");
@@ -2043,14 +2219,25 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 					}),
 					installError !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: Market_module_css_default.err,
-						children: [installError, staleName !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: Market_module_css_default.staleAction,
-							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-								size: "sm",
-								onClick: () => doUpdate(staleName, true),
-								children: t("updateNow")
+						children: [
+							installError,
+							staleName !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: Market_module_css_default.staleAction,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									size: "sm",
+									onClick: () => doUpdate(staleName, true),
+									children: t("updateNow")
+								})
+							}),
+							installFail !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: Market_module_css_default.staleAction,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									size: "sm",
+									onClick: () => setHelpOpen(true),
+									children: "发起新对话寻求帮助"
+								})
 							})
-						})]
+						]
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: Market_module_css_default.body,
@@ -2448,6 +2635,12 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 								children: "⚠️ " + t("confirmWarn")
 							})
 						]
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(HelpPromptDialog, {
+						open: helpOpen,
+						kind: "install",
+						install: installFail ?? void 0,
+						onClose: () => setHelpOpen(false)
 					})
 				]
 			});

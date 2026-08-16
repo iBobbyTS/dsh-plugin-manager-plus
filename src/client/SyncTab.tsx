@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { Button, Input } from '@deepseek-ai/dsh-client-ui-primitives'
+import { HelpPromptDialog } from './HelpPromptDialog.tsx'
 import type { Translate } from './market-data.ts'
 
 interface SyncTabProps {
@@ -35,6 +36,9 @@ export function SyncTab({ t }: SyncTabProps) {
   const [busy, setBusy] = useState<'test' | 'backup' | 'restore' | null>(null)
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Last sync failure detail for the "start a new conversation for help" action.
+  const [syncHelp, setSyncHelp] = useState<{ action: 'backup' | 'restore'; errorCode: string; errorMessage: string; hint: string; localPlugins: string[] } | null>(null)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   // Load config on mount
   useEffect(() => {
@@ -121,7 +125,11 @@ export function SyncTab({ t }: SyncTabProps) {
           ? { ok: true, text: `${t('syncBackupOk')}（${skipped.length} 个本地插件未备份：${skipped.join('、')}）` }
           : { ok: true, text: includeLocal ? `${t('syncBackupOk')}（含本地插件文件）` : t('syncBackupOk') })
       } else {
-        setStatus({ ok: false, text: (data.error as SyncError)?.message || '备份失败' })
+        const syncErr = data.error as SyncError | undefined
+        setStatus({ ok: false, text: syncErr?.message || '备份失败' })
+        if (syncErr) {
+          setSyncHelp({ action: 'backup', errorCode: syncErr.code, errorMessage: syncErr.message, hint: syncErr.hint, localPlugins: [] })
+        }
       }
     } catch {
       setStatus({ ok: false, text: t('syncTestFail') })
@@ -169,7 +177,11 @@ export function SyncTab({ t }: SyncTabProps) {
           }
         }
       } else {
-        setStatus({ ok: false, text: (data.error as SyncError)?.message || '拉取失败' })
+        const syncErr = data.error as SyncError | undefined
+        setStatus({ ok: false, text: syncErr?.message || '拉取失败' })
+        if (syncErr) {
+          setSyncHelp({ action: 'restore', errorCode: syncErr.code, errorMessage: syncErr.message, hint: syncErr.hint, localPlugins: [] })
+        }
       }
     } catch {
       setStatus({ ok: false, text: t('syncTestFail') })
@@ -227,6 +239,11 @@ export function SyncTab({ t }: SyncTabProps) {
         {status && (
           <div style={{ fontSize: 12, color: status.ok ? 'var(--dsw-alias-state-success-primary,#16a34a)' : 'var(--dsw-alias-state-error-primary,#dc2626)' }}>
             {status.text}
+            {!status.ok && syncHelp !== null && (
+              <div style={{ marginTop: 6 }}>
+                <Button size="sm" variant="outline" onClick={() => setHelpOpen(true)}>发起新对话寻求帮助</Button>
+              </div>
+            )}
           </div>
         )}
         {error && <div style={{ fontSize: 12, color: 'var(--dsw-alias-state-error-primary,#dc2626)' }}>{error}</div>}
@@ -246,6 +263,12 @@ export function SyncTab({ t }: SyncTabProps) {
           {t('syncLastSync')}: {new Date(config.lastSyncAt).toLocaleString()}
         </div>
       )}
+      <HelpPromptDialog
+        open={helpOpen}
+        kind="sync"
+        sync={syncHelp !== null ? { ...syncHelp, repo, branch } : undefined}
+        onClose={() => setHelpOpen(false)}
+      />
     </div>
   )
 }

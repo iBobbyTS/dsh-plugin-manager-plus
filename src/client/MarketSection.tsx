@@ -7,6 +7,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, use
 import { Button, IconChevronDownOutline14, IconChevronUpOutline14, IconSearchOutline16, Input, Modal, Pill, StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './Market.module.css'
 import { SyncTab } from './SyncTab.tsx'
+import { HelpPromptDialog } from './HelpPromptDialog.tsx'
 import {
   avatarColor, entryForDep, isInstalled, looksTerminal, matchInstalledName, orderedCategories,
   pageItems, readSession, repoOf, themePlugins as themePluginsOf, themeSwatch, TIME_RANGE_DAYS, visiblePlugins,
@@ -145,6 +146,9 @@ export function MarketSection(props: MarketSectionProps) {
   const idleStrikes = useRef(0)
   const [doneUrls, setDoneUrls] = useState<string[]>([])
   const [installError, setInstallError] = useState<string | null>(null)
+  // Last install failure detail for the "start a new conversation for help" action.
+  const [installFail, setInstallFail] = useState<{ pluginName: string; pluginUrl: string; exitCode: number | null; timedOut: boolean; output: string; blockedBuilds: string[] } | null>(null)
+  const [helpOpen, setHelpOpen] = useState(false)
   const [updates, setUpdates] = useState<Record<string, UpdateStatus>>({})
   const [updatingName, setUpdatingName] = useState<string | null>(null)
   // Plugin blocked by pnpm's fresh-release safety wait; arms the update-now button.
@@ -458,6 +462,14 @@ export function MarketSection(props: MarketSectionProps) {
           const text = (v: unknown) => typeof v === 'string' ? v : (v && typeof (v as any).text === 'string') ? (v as any).text : v == null ? '' : JSON.stringify(v)
           const detail = text(body.error) || [text(body.stderr), text(body.stdout)].filter(Boolean).join('\n').trim() || ('exit ' + body.exitCode)
           setInstallError(t('installFail') + ': ' + plugin.name + ' — ' + detail.trim().slice(-600))
+          setInstallFail({
+            pluginName: plugin.name,
+            pluginUrl: plugin.url,
+            exitCode: typeof body.exitCode === 'number' ? body.exitCode : null,
+            timedOut: body.timedOut === true,
+            output: detail,
+            blockedBuilds: Array.isArray(body.ignoredBuilds) ? body.ignoredBuilds.map(String) : [],
+          })
         }
       })
       .catch(error => {
@@ -929,6 +941,11 @@ export function MarketSection(props: MarketSectionProps) {
               <Button size="sm" onClick={() => doUpdate(staleName, true)}>{t('updateNow')}</Button>
             </div>
           )}
+          {installFail !== null && (
+            <div className={css.staleAction}>
+              <Button size="sm" onClick={() => setHelpOpen(true)}>发起新对话寻求帮助</Button>
+            </div>
+          )}
         </div>
       )}
       <div
@@ -1240,6 +1257,12 @@ export function MarketSection(props: MarketSectionProps) {
           <p className={css.modalNote}>{'⚠️ ' + t('confirmWarn')}</p>
         </Modal>
       )}
+      <HelpPromptDialog
+        open={helpOpen}
+        kind="install"
+        install={installFail ?? undefined}
+        onClose={() => setHelpOpen(false)}
+      />
     </div>
   )
 }
