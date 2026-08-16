@@ -1,0 +1,9 @@
+node_modules/
+lib/
+research/
+*.tgz
+.DS_Store
+# Local diagnostic/screenshot scripts (not part of the plugin)
+scripts/diag-*.cjs
+scripts/shot-*.cjs
+scripts/test-patch-parse.cjs
