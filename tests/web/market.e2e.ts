@@ -51,7 +51,7 @@ describe.skipIf(!HAS_DSH)('web e2e: plugin market', () => {
 
   it('opens Settings → Plugin Market and renders the catalog paginated', async () => {
     await page.getByRole('button', { name: /^(设置|Settings)$/ }).first().click()
-    await page.getByRole('button', { name: /插件市场|Plugin Market/ }).click()
+    await page.getByRole('button', { name: /插件管理|Plugin Manager/ }).click()
     await page.waitForSelector('[class*="grid"] [class*="card"]', { timeout: 30_000 })
     const cards = await page.locator('[class*="grid"] [class*="card"]').count()
     // Pagination: a bounded first page (24) instead of the full 400+ catalog,
@@ -91,7 +91,7 @@ describe.skipIf(!HAS_DSH)('web e2e: plugin market', () => {
   it('the installed tab lists the market itself', async () => {
     await page.getByRole('button', { name: /已安装|Installed/ }).click()
     await expect.poll(
-      async () => page.locator('[class*="irow"]', { hasText: 'dshmarket' }).count(),
+      async () => page.locator('[class*="irow"]', { hasText: 'dsh-plugin-manager-plus' }).count(),
       { timeout: 15_000 },
     ).toBeGreaterThanOrEqual(1)
   })

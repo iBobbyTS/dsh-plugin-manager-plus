@@ -38,7 +38,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            --title "dshmarket ${GITHUB_REF_NAME#v}" \
+            --title "dsh-plugin-manager-plus ${GITHUB_REF_NAME#v}" \
             --generate-notes \
-            --notes "npm: https://www.npmjs.com/package/dshmarket/v/${GITHUB_REF_NAME#v}"
+            --notes "npm: https://www.npmjs.com/package/dsh-plugin-manager-plus/v/${GITHUB_REF_NAME#v}"
 
