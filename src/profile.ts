@@ -202,16 +202,26 @@ export function pluginSubdirs(root: string): string[] {
  * pnpm-workspace.yaml `allowBuilds` block (the key dsh profiles use),
  * merging with existing entries and leaving the rest of the yaml intact.
  * (#6 by @qichuang321.)
+ *
+ * Also removes pnpm's own failed-install placeholder rows
+ * (`pkg: set this to true or false`, pnpm bug #11535) — those are literal
+ * strings that break every later approval until dropped.
  * @returns every package now allowed.
  */
 export function setAllowBuilds(profile: string, packages: string[]): string[] {
   const file = join(profileDir(profile), 'pnpm-workspace.yaml')
   let yaml = ''
   try { yaml = readFileSync(file, 'utf8') } catch { /* created below */ }
-  const blockRe = /allowBuilds:\n((?:[ \t]+[^\n]*\n?)*)/
+  // Normalize CRLF so block matching is line-based and repeat-proof.
+  const normalized = yaml.replace(/\r\n/g, '\n')
+  // Drop pnpm's literal placeholder rows outright.
+  const cleaned = normalized
+    .split('\n')
+    .filter(line => !/^\s+[^:\s]+\s*:\s*set this to true or false\s*$/i.test(line))
+    .join('\n')
+  const blockRe = /allowBuilds:\n((?:[ \t]+[^\n]*\n?)*)/g
   const map: Record<string, string> = {}
-  const blockMatch = blockRe.exec(yaml)
-  if (blockMatch !== null) {
+  for (const blockMatch of cleaned.matchAll(blockRe)) {
     for (const line of blockMatch[1].split('\n')) {
       const m = /^[ \t]+([^:\s]+(?:\/[^:\s]+)?)\s*:\s*(\S.*)?$/.exec(line)
       if (m === null) continue
@@ -227,8 +237,54 @@ export function setAllowBuilds(profile: string, packages: string[]): string[] {
   }
   const block = Object.entries(map).map(([k, v]) => `  ${k}: ${v}`).join('\n')
   const blockText = `allowBuilds:\n${block}\n`
-  writeFileSync(file, blockMatch !== null ? yaml.replace(blockRe, blockText) : `${yaml.replace(/\n?$/, '\n')}${blockText}`)
+  const replaced = cleaned.replace(blockRe, blockText)
+  const finalYaml = replaced.includes('allowBuilds:')
+    ? replaced
+    : `${replaced.replace(/\n?$/, '\n')}${blockText}`
+  writeFileSync(file, finalYaml)
   return Object.keys(map)
+}
+
+/**
+ * Add fully-qualified package specs to the profile's pnpm-workspace.yaml
+ * `onlyBuiltDependencies` list. pnpm >=10 requires the COMPLETE spec (e.g.
+ * "@scope/name@git+https://github.com/o/r.git#<sha>") for git-hosted
+ * packages whose build scripts must run — the short name or the legacy
+ * `allowBuilds` key is rejected with ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED.
+ * The specs are taken verbatim from pnpm's own error suggestion, so they
+ * match exactly. Merges with existing entries; idempotent.
+ * @returns the specs that were newly added.
+ */
+export function setOnlyBuiltDependencies(profile: string, specs: string[]): string[] {
+  const file = join(profileDir(profile), 'pnpm-workspace.yaml')
+  let yaml = ''
+  try { yaml = readFileSync(file, 'utf8') } catch { /* created below */ }
+  const normalized = yaml.replace(/\r\n/g, '\n')
+  const blockRe = /onlyBuiltDependencies:\n((?:[ \t]+- [^\n]*\n?)*)/g
+  const existing = new Set<string>()
+  for (const blockMatch of normalized.matchAll(blockRe)) {
+    for (const line of blockMatch[1].split('\n')) {
+      const m = /^[ \t]+-\s*(.+?)\s*$/.exec(line)
+      if (m !== null) existing.add(m[1]!.replace(/^['"]|['"]$/g, ''))
+    }
+  }
+  const added: string[] = []
+  for (const spec of specs) {
+    const clean = spec.trim().replace(/^['"]|['"]$/g, '')
+    if (clean !== '' && !existing.has(clean)) {
+      existing.add(clean)
+      added.push(clean)
+    }
+  }
+  if (added.length === 0) return []
+  const lines = [...existing].map(s => `  - '${s}'`).join('\n')
+  const blockText = `onlyBuiltDependencies:\n${lines}\n`
+  const replaced = normalized.replace(blockRe, blockText)
+  const finalYaml = replaced.includes('onlyBuiltDependencies:')
+    ? replaced
+    : `${replaced.replace(/\n?$/, '\n')}${blockText}`
+  writeFileSync(file, finalYaml)
+  return added
 }
 
 /**

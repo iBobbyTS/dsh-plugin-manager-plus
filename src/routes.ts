@@ -19,9 +19,9 @@ import {
 } from './hot.ts'
 import { exportLogs, logEvent } from './log.ts'
 import { BOOT_ID, cancelActive, probePnpm, progress, provisionPnpm, runDshPlugin } from './dsh-cli.ts'
-import { profileDir, readInstalled, readInstalledVersion, readInstalledRepo, readLockCommits, setAllowBuilds, snapshotProfile, setDisabledState, reapplyDisabledState } from './profile.ts'
+import { profileDir, readInstalled, readInstalledVersion, readInstalledRepo, readLockCommits, setAllowBuilds, setOnlyBuiltDependencies, snapshotProfile, setDisabledState, reapplyDisabledState } from './profile.ts'
 import { findInstalledAlias, installTargetFor } from './sources.ts'
-import { isStaleUpdate, parseIgnoredBuilds, RELEASE_AGE_OVERRIDE, retargetCollections, validateAddedPlugins, withHoistRecovery } from './install.ts'
+import { isStaleUpdate, parseIgnoredBuilds, parseOnlyBuiltSpecs, RELEASE_AGE_OVERRIDE, retargetCollections, validateAddedPlugins, withHoistRecovery } from './install.ts'
 import { checkUpdates, invalidateUpdates, latestPublishedRecently, fetchJson } from './updates.ts'
 import { createThemeManager, type LoaderEntry } from './themes.ts'
 import { readJsonBody, sameOrigin, sendJson } from './http.ts'
@@ -99,6 +99,19 @@ function dshVersion(): string {
   }
   return 'unknown'
 }
+
+/** Most recent failed install, kept server-side so the help prompt can be
+ * built without shipping the (potentially large) error output in the request
+ * body — avoids "request body too large" on big pnpm logs. */
+interface LastInstallFailure {
+  pluginName: string
+  pluginUrl: string
+  exitCode: number | null
+  timedOut: boolean
+  output: string
+  blockedBuilds: string[]
+}
+let lastInstallFailure: LastInstallFailure | null = null
 
 export interface WebServerService {
   register(route: {
@@ -815,14 +828,22 @@ export function mountMarketRoutes(host: MarketHost, config: MarketConfig): () =>
                 spec: String(spec),
                 repoUrl: readInstalledRepo(config.profile, name),
               }))
+            // Prefer the server-side cached failure when the request only names
+            // the plugin — avoids shipping large error output in the body.
+            const cached = lastInstallFailure !== null
+              && body.install.pluginName !== undefined
+              && (body.install.output === undefined || body.install.output === '')
+              && body.install.pluginName === lastInstallFailure.pluginName
+              ? lastInstallFailure
+              : null
             const prompt = buildInstallHelpPrompt({
-              pluginName: body.install.pluginName ?? '未知插件',
-              pluginUrl: body.install.pluginUrl ?? '',
+              pluginName: cached?.pluginName ?? body.install.pluginName ?? '未知插件',
+              pluginUrl: cached?.pluginUrl ?? body.install.pluginUrl ?? '',
               profile: config.profile,
-              exitCode: typeof body.install.exitCode === 'number' ? body.install.exitCode : null,
-              timedOut: body.install.timedOut === true,
-              output: typeof body.install.output === 'string' ? body.install.output : '',
-              blockedBuilds: Array.isArray(body.install.blockedBuilds) ? body.install.blockedBuilds.map(String) : [],
+              exitCode: cached !== null ? cached.exitCode : (typeof body.install.exitCode === 'number' ? body.install.exitCode : null),
+              timedOut: cached !== null ? cached.timedOut : body.install.timedOut === true,
+              output: cached !== null ? cached.output : (typeof body.install.output === 'string' ? body.install.output.slice(-20000) : ''),
+              blockedBuilds: cached !== null ? cached.blockedBuilds : (Array.isArray(body.install.blockedBuilds) ? body.install.blockedBuilds.map(String) : []),
               installed,
               dshVersion: dshVersion(),
               pluginManagerVersion: pmVersion,
@@ -1026,7 +1047,27 @@ export function mountMarketRoutes(host: MarketHost, config: MarketConfig): () =>
             if (snap !== null) logEvent('info', 'install', `snapshot: ${snap}`)
             const beforeSpecs = readInstalled(config.profile)
             const before = new Set(Object.keys(beforeSpecs))
-            const result = await runPlugin(config.profile, ['add', target])
+            let result = await runPlugin(config.profile, ['add', target])
+            // Auto-approve blocked build scripts and retry once. pnpm >=10
+            // hard-fails git-hosted packages whose scripts are not in
+            // `onlyBuiltDependencies` (full spec required), and treats
+            // `ERR_PNPM_IGNORED_BUILDS` as a failure the dsh CLI propagates —
+            // either way the reconcile into dsh.profile.bundles never happens
+            // and the plugin stays inert. Detect the blocked packages from the
+            // output, write the right allowlist, and re-add exactly once.
+            if ((result.exitCode !== 0 || result.timedOut) && !result.cancelled) {
+              const gitSpecs = parseOnlyBuiltSpecs(result.stdout, result.stderr)
+              const blocked = parseIgnoredBuilds(result.stdout, result.stderr)
+              if (gitSpecs.length > 0) {
+                logEvent('warn', 'install', `build scripts blocked by pnpm onlyBuiltDependencies for ${gitSpecs.join(', ')} — auto-approving and retrying once`)
+                setOnlyBuiltDependencies(config.profile, gitSpecs)
+                result = await runPlugin(config.profile, ['add', target])
+              } else if (blocked.length > 0) {
+                logEvent('warn', 'install', `build scripts blocked by pnpm allowBuilds for ${blocked.join(', ')} — auto-approving and retrying once`)
+                setAllowBuilds(config.profile, blocked)
+                result = await runPlugin(config.profile, ['add', target])
+              }
+            }
             const cancelled = result.cancelled
             let ok = result.exitCode === 0 && !result.timedOut && !cancelled
             const cancelDiff = cancelled ? changedSince(beforeSpecs) : null
@@ -1080,6 +1121,18 @@ export function mountMarketRoutes(host: MarketHost, config: MarketConfig): () =>
             }
             logEvent(ok || cancelled ? 'info' : 'error', 'install',
               `${target} exit=${String(result.exitCode)}${result.timedOut ? ' TIMEOUT' : ''}${cancelled ? ' CANCELLED' : ''}${ok ? ` hot=${String(hot)}` : cancelled ? '' : ` stderr=${result.stderr.slice(-300)}`}`)
+            // Keep the failure server-side so the help prompt does not need the
+            // (potentially large) output shipped back in a request body.
+            if (!ok && !cancelled) {
+              lastInstallFailure = {
+                pluginName: entry.name,
+                pluginUrl: entry.url,
+                exitCode: result.exitCode,
+                timedOut: result.timedOut,
+                output: [result.stderr, result.stdout].filter(Boolean).join('\n').trim().slice(-20000),
+                blockedBuilds: parseIgnoredBuilds(result.stdout, result.stderr),
+              }
+            }
             sendJson(response, ok || cancelled ? 200 : 502, {
               ok,
               cancelled: cancelled || undefined,

@@ -142,21 +142,78 @@ export function isStaleUpdate(check: {
 }
 
 /**
- * Package names pnpm reported as having their build scripts ignored
- * ("Ignored build scripts: esbuild, koffi."). Empty when none.
+ * Package names pnpm reported as needing build-script approval. Empty when
+ * none. Handles:
+ *
+ * 1. Warning / ERR_PNPM_IGNORED_BUILDS:
+ *    `Ignored build scripts: node-pty@1.1.0, esbuild.` — version suffixes
+ *    are stripped, so `node-pty@1.1.0` yields `node-pty`.
+ * 2. Hard failure (pnpm >=10 for git-hosted packages):
+ *    `The git-hosted package "@scope/name@1.0.0" needs to execute build
+ *    scripts but is not in the "allowBuilds" allowlist.`
+ * 3. pnpm's own remediation snippet:
+ *    `onlyBuiltDependencies:\n  - "name@git+...#sha"`
+ *
  * (#6 by @qichuang321.)
  */
 export function parseIgnoredBuilds(stdout: string, stderr: string): string[] {
-  const m = /Ignored build scripts:?\s*([^\n]+)/i.exec(`${stdout}\n${stderr}`)
-  if (m === null) return []
+  const combined = `${stdout}\n${stderr}`
   const found: string[] = []
-  for (const chunk of m[1].split(',')) {
-    // Entries may carry a version suffix and the sentence's final period.
-    const trimmed = chunk.trim().replace(/\.$/, '')
-    if (trimmed === '') continue
-    const at = trimmed.lastIndexOf('@')
-    const name = at > 0 ? trimmed.slice(0, at) : trimmed
+  const push = (name: string): void => {
     if (name !== '' && !found.includes(name)) found.push(name)
   }
+  // Format 1: "Ignored build scripts: node-pty@1.1.0, esbuild."
+  const warn = /Ignored build scripts:?\s*([^\n]+)/i.exec(combined)
+  if (warn !== null) {
+    for (const chunk of warn[1].split(',')) {
+      const trimmed = chunk.trim().replace(/\.$/, '')
+      if (trimmed === '') continue
+      // Strip the version suffix when the entry looks like name@version.
+      const at = trimmed.lastIndexOf('@')
+      push(at > 0 ? trimmed.slice(0, at) : trimmed)
+    }
+  }
+  // Format 2: 'The git-hosted package "name@version" needs to execute build
+  // scripts but is not in the "allowBuilds" allowlist.'
+  for (const m of combined.matchAll(/package\s+"([^"]+)"\s+needs to execute build scripts[^"\n]*"allowBuilds"/g)) {
+    const spec = m[1]!.trim()
+    const at = spec.lastIndexOf('@')
+    push(at > 0 ? spec.slice(0, at) : spec)
+  }
+  // Format 3: full spec from pnpm's "onlyBuiltDependencies:" remediation
+  // snippet — the exact strings pnpm wants (name@git+url#sha).
+  const onlyBuiltMatch = /onlyBuiltDependencies:\s*\n((?:[ \t]*-[^\n]*\n?)*)/.exec(combined)
+  if (onlyBuiltMatch !== null) {
+    for (const line of onlyBuiltMatch[1].split('\n')) {
+      const m = /^\s*-\s*(.+?)\s*$/.exec(line)
+      if (m === null) continue
+      const spec = m[1]!.trim().replace(/^['"]|['"]$/g, '')
+      if (spec !== '' && spec.includes('@')) {
+        // For the short-name case (no git URL), strip to the package name.
+        const at = spec.lastIndexOf('@')
+        push(at > 0 ? spec.slice(0, at) : spec)
+      }
+    }
+  }
   return found
+}
+
+/**
+ * Extract the fully-qualified `onlyBuiltDependencies` specs pnpm suggests in
+ * its remediation snippet (e.g. "@scope/name@git+https://github.com/o/r.git#sha").
+ * Returns only specs that carry a git URL — these are what pnpm >=10 requires
+ * verbatim for git-hosted packages. Empty when none.
+ */
+export function parseOnlyBuiltSpecs(stdout: string, stderr: string): string[] {
+  const combined = `${stdout}\n${stderr}`
+  const specs: string[] = []
+  const onlyBuiltMatch = /onlyBuiltDependencies:\s*\n((?:[ \t]*-[^\n]*\n?)*)/.exec(combined)
+  if (onlyBuiltMatch === null) return specs
+  for (const line of onlyBuiltMatch[1].split('\n')) {
+    const m = /^\s*-\s*(.+?)\s*$/.exec(line)
+    if (m === null) continue
+    const spec = m[1]!.trim().replace(/^['"]|['"]$/g, '')
+    if (spec.includes('git+') && spec.includes('#')) specs.push(spec)
+  }
+  return specs
 }
