@@ -7,3 +7,4 @@ research/
 scripts/diag-*.cjs
 scripts/shot-*.cjs
 scripts/test-patch-parse.cjs
+scripts/test-pack.cjs

@@ -476,90 +476,90 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 			document.head.appendChild(tag);
 		}
 		var Market_module_css_default = {
-			"sizeLabel": "kTvk8q_sizeLabel",
-			"dangerArmed": "kTvk8q_dangerArmed",
-			"row1": "kTvk8q_row1",
-			"actLive": "kTvk8q_actLive",
-			"sp": "kTvk8q_sp",
-			"err": "kTvk8q_err",
-			"warnLine": "kTvk8q_warnLine",
-			"nm": "kTvk8q_nm",
-			"pageBtn": "kTvk8q_pageBtn",
-			"head": "kTvk8q_head",
-			"filterBtnOn": "kTvk8q_filterBtnOn",
-			"grow": "kTvk8q_grow",
-			"pageInfo": "kTvk8q_pageInfo",
-			"tabs": "kTvk8q_tabs",
-			"cmdDetails": "kTvk8q_cmdDetails",
-			"spin": "kTvk8q_spin",
-			"filterBtn": "kTvk8q_filterBtn",
-			"top": "kTvk8q_top",
-			"pagerSize": "kTvk8q_pagerSize",
-			"dshmSlide": "kTvk8q_dshmSlide",
-			"officialBadge": "kTvk8q_officialBadge",
-			"root": "kTvk8q_root",
-			"title": "kTvk8q_title",
-			"catsRow": "kTvk8q_catsRow",
-			"filterGroup": "kTvk8q_filterGroup",
-			"themesGrid": "kTvk8q_themesGrid",
-			"pct": "kTvk8q_pct",
-			"restart": "kTvk8q_restart",
-			"descTight": "kTvk8q_descTight",
-			"empty": "kTvk8q_empty",
-			"desc": "kTvk8q_desc",
-			"localBadge": "kTvk8q_localBadge",
-			"barWave": "kTvk8q_barWave",
-			"catsToggle": "kTvk8q_catsToggle",
-			"src": "kTvk8q_src",
-			"titleRow": "kTvk8q_titleRow",
-			"staleAction": "kTvk8q_staleAction",
-			"searchInline": "kTvk8q_searchInline",
-			"cmd": "kTvk8q_cmd",
-			"card": "kTvk8q_card",
-			"grid": "kTvk8q_grid",
-			"owner": "kTvk8q_owner",
 			"sub": "kTvk8q_sub",
-			"barFill": "kTvk8q_barFill",
-			"catsCollapsed": "kTvk8q_catsCollapsed",
-			"actWhy": "kTvk8q_actWhy",
-			"pageOn": "kTvk8q_pageOn",
-			"catsWrap": "kTvk8q_catsWrap",
-			"localSpec": "kTvk8q_localSpec",
-			"swatches": "kTvk8q_swatches",
-			"sizeBtn": "kTvk8q_sizeBtn",
-			"loading": "kTvk8q_loading",
-			"filterWrap": "kTvk8q_filterWrap",
-			"dangerBtn": "kTvk8q_dangerBtn",
-			"sizeOn": "kTvk8q_sizeOn",
-			"filterTitle": "kTvk8q_filterTitle",
 			"cmdSummary": "kTvk8q_cmdSummary",
+			"dot": "kTvk8q_dot",
+			"foot": "kTvk8q_foot",
+			"dangerBtn": "kTvk8q_dangerBtn",
+			"catsRow": "kTvk8q_catsRow",
+			"cmdDetails": "kTvk8q_cmdDetails",
+			"err": "kTvk8q_err",
+			"cmd": "kTvk8q_cmd",
+			"actWhy": "kTvk8q_actWhy",
+			"bar": "kTvk8q_bar",
+			"root": "kTvk8q_root",
+			"themesGrid": "kTvk8q_themesGrid",
+			"pager": "kTvk8q_pager",
+			"pageEllipsis": "kTvk8q_pageEllipsis",
+			"descTight": "kTvk8q_descTight",
+			"star": "kTvk8q_star",
+			"loading": "kTvk8q_loading",
+			"pagerPages": "kTvk8q_pagerPages",
+			"filterOption": "kTvk8q_filterOption",
+			"cats": "kTvk8q_cats",
+			"actWarn": "kTvk8q_actWarn",
+			"progress": "kTvk8q_progress",
+			"sp": "kTvk8q_sp",
+			"desc": "kTvk8q_desc",
+			"spec": "kTvk8q_spec",
+			"pageBtn": "kTvk8q_pageBtn",
+			"barWave": "kTvk8q_barWave",
+			"top": "kTvk8q_top",
+			"linkName": "kTvk8q_linkName",
+			"body": "kTvk8q_body",
+			"okState": "kTvk8q_okState",
+			"sizeLabel": "kTvk8q_sizeLabel",
+			"irow": "kTvk8q_irow",
+			"titleRow": "kTvk8q_titleRow",
+			"empty": "kTvk8q_empty",
+			"title": "kTvk8q_title",
+			"grow": "kTvk8q_grow",
+			"filterTitle": "kTvk8q_filterTitle",
+			"spin": "kTvk8q_spin",
+			"restart": "kTvk8q_restart",
+			"card": "kTvk8q_card",
+			"dangerArmed": "kTvk8q_dangerArmed",
+			"pagerSize": "kTvk8q_pagerSize",
+			"filterPanel": "kTvk8q_filterPanel",
+			"filterGroup": "kTvk8q_filterGroup",
+			"sizeOn": "kTvk8q_sizeOn",
+			"head": "kTvk8q_head",
+			"cancelBtn": "kTvk8q_cancelBtn",
+			"staleAction": "kTvk8q_staleAction",
+			"officialBadge": "kTvk8q_officialBadge",
+			"sect": "kTvk8q_sect",
+			"filterBtn": "kTvk8q_filterBtn",
+			"tabs": "kTvk8q_tabs",
+			"actLive": "kTvk8q_actLive",
+			"barFill": "kTvk8q_barFill",
+			"pageOn": "kTvk8q_pageOn",
+			"pageInfo": "kTvk8q_pageInfo",
+			"catsWrap": "kTvk8q_catsWrap",
+			"filterWrap": "kTvk8q_filterWrap",
+			"dshmSlide": "kTvk8q_dshmSlide",
+			"localSpec": "kTvk8q_localSpec",
+			"modalNote": "kTvk8q_modalNote",
+			"catsToggle": "kTvk8q_catsToggle",
+			"av": "kTvk8q_av",
+			"pct": "kTvk8q_pct",
+			"searchInline": "kTvk8q_searchInline",
+			"swatches": "kTvk8q_swatches",
+			"src": "kTvk8q_src",
 			"act": "kTvk8q_act",
 			"on": "kTvk8q_on",
-			"body": "kTvk8q_body",
-			"filterPanel": "kTvk8q_filterPanel",
-			"okState": "kTvk8q_okState",
-			"dot": "kTvk8q_dot",
-			"tab": "kTvk8q_tab",
-			"actBroken": "kTvk8q_actBroken",
-			"filterOption": "kTvk8q_filterOption",
 			"tag": "kTvk8q_tag",
-			"actWarn": "kTvk8q_actWarn",
-			"star": "kTvk8q_star",
-			"modalNote": "kTvk8q_modalNote",
-			"sect": "kTvk8q_sect",
-			"foot": "kTvk8q_foot",
-			"av": "kTvk8q_av",
-			"progress": "kTvk8q_progress",
-			"bar": "kTvk8q_bar",
+			"warnLine": "kTvk8q_warnLine",
 			"warnBtn": "kTvk8q_warnBtn",
-			"spec": "kTvk8q_spec",
-			"cancelBtn": "kTvk8q_cancelBtn",
-			"pagerPages": "kTvk8q_pagerPages",
-			"cats": "kTvk8q_cats",
-			"irow": "kTvk8q_irow",
-			"pageEllipsis": "kTvk8q_pageEllipsis",
-			"pager": "kTvk8q_pager",
-			"linkName": "kTvk8q_linkName"
+			"grid": "kTvk8q_grid",
+			"actBroken": "kTvk8q_actBroken",
+			"filterBtnOn": "kTvk8q_filterBtnOn",
+			"nm": "kTvk8q_nm",
+			"owner": "kTvk8q_owner",
+			"tab": "kTvk8q_tab",
+			"sizeBtn": "kTvk8q_sizeBtn",
+			"catsCollapsed": "kTvk8q_catsCollapsed",
+			"localBadge": "kTvk8q_localBadge",
+			"row1": "kTvk8q_row1"
 		};
 		//#endregion
 		//#region src/client/SyncTab.tsx
@@ -642,26 +642,28 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 				setError(null);
 				try {
 					const localList = (await (await fetch("/plugin-manager/sync-export?includeLocal=false", { cache: "no-store" })).json()).skippedLocal ?? [];
+					let includeLocal = false;
 					if (localList.length > 0) {
 						const names = localList.join("\n  • ");
-						if (!window.confirm(`以下 ${localList.length} 个本地部署的插件没有 GitHub 链接，无法自动还原：\n\n  • ${names}\n\n是否仍要备份其他插件？（这些插件需手动复制）`)) {
+						if (!window.confirm(`发现 ${localList.length} 个本地插件（无 GitHub 链接）：\n\n  • ${names}\n\n是否将它们的文件一并备份到清单？（可在其他电脑完整还原）\n\n[确定] 包含文件  |  [取消] 跳过这些插件`)) {
 							setBusy(null);
 							return;
 						}
+						includeLocal = true;
 					}
 					const data = await (await fetch("/plugin-manager/sync-push", {
 						method: "POST",
 						headers: { "content-type": "application/json" },
-						body: JSON.stringify({})
+						body: JSON.stringify({ includeLocal })
 					})).json();
 					if (data.ok) {
 						const skipped = data.skippedLocal ?? [];
 						setStatus(skipped.length > 0 ? {
 							ok: true,
-							text: `${t("syncBackupOk")}（${skipped.length} 个本地插件已跳过：${skipped.join("、")}）`
+							text: `${t("syncBackupOk")}（${skipped.length} 个本地插件未备份：${skipped.join("、")}）`
 						} : {
 							ok: true,
-							text: t("syncBackupOk")
+							text: includeLocal ? `${t("syncBackupOk")}（含本地插件文件）` : t("syncBackupOk")
 						});
 					} else setStatus({
 						ok: false,
@@ -686,17 +688,28 @@ window.__ModuleLoader__.load({ id: "dsh-plugin-manager-plus", factory: (require)
 						body: "{}"
 					})).json();
 					if (data.ok && data.diff) {
-						const toInstall = data.diff.toInstall.length;
-						const already = data.diff.alreadyInstalled.length;
-						if (toInstall === 0) setStatus({
+						const toInstall = data.diff.toInstall ?? [];
+						const already = data.diff.alreadyInstalled?.length ?? 0;
+						const localCount = (data.manifest?.localPlugins ?? null) != null && Object.keys(data.manifest.localPlugins ?? {}).length > 0 ? Object.keys(data.manifest.localPlugins).length : 0;
+						if (toInstall.length === 0) setStatus({
 							ok: true,
 							text: `已是最新，无需还原（${already} 个已存在）`
 						});
-						else if (window.confirm(`发现 ${toInstall} 个插件可还原，${already} 个已存在。\n\n是否执行还原？`)) setStatus({
-							ok: true,
-							text: `可还原 ${toInstall} 个插件（已存在 ${already} 个）`
-						});
-						else setStatus({
+						else if (window.confirm(`发现 ${toInstall.length} 个插件可还原，${already} 个已存在。\n${localCount > 0 ? `其中 ${localCount} 个本地插件将自动还原文件。` : ""}\n\n是否执行还原？`)) {
+							let localRestored = 0;
+							if (localCount > 0 && data.manifest) localRestored = (await (await fetch("/plugin-manager/sync-restore-local", {
+								method: "POST",
+								headers: { "content-type": "application/json" },
+								body: JSON.stringify({ manifest: data.manifest })
+							})).json()).restored?.length ?? 0;
+							const onlineNames = toInstall.filter((p) => p.local !== true).map((p) => p.name);
+							const msg = [`已还原 ${localRestored} 个本地插件。`];
+							if (onlineNames.length > 0) msg.push(`另有 ${onlineNames.length} 个插件可从市场安装：${onlineNames.join("、")}`);
+							setStatus({
+								ok: true,
+								text: msg.join("\n")
+							});
+						} else setStatus({
 							ok: false,
 							text: "已取消还原"
 						});

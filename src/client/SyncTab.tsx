@@ -92,7 +92,7 @@ export function SyncTab({ t }: SyncTabProps) {
     setBusy(null)
   }, [t])
 
-  // Backup: ask about local-only plugins, then push
+  // Backup: ask about local-only plugins, then push (files included on confirm)
   const doBackup = useCallback(async () => {
     setBusy('backup')
     setStatus(null)
@@ -102,22 +102,24 @@ export function SyncTab({ t }: SyncTabProps) {
       const check = await fetch('/plugin-manager/sync-export?includeLocal=false', { cache: 'no-store' })
       const checkData = await check.json()
       const localList = (checkData.skippedLocal as string[] | undefined) ?? []
+      let includeLocal = false
       if (localList.length > 0) {
         const names = localList.join('\n  • ')
-        const ok = window.confirm(`以下 ${localList.length} 个本地部署的插件没有 GitHub 链接，无法自动还原：\n\n  • ${names}\n\n是否仍要备份其他插件？（这些插件需手动复制）`)
+        const ok = window.confirm(`发现 ${localList.length} 个本地插件（无 GitHub 链接）：\n\n  • ${names}\n\n是否将它们的文件一并备份到清单？（可在其他电脑完整还原）\n\n[确定] 包含文件  |  [取消] 跳过这些插件`)
         if (!ok) { setBusy(null); return }
+        includeLocal = true
       }
       const r = await fetch('/plugin-manager/sync-push', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ includeLocal }),
       })
       const data = await r.json()
       if (data.ok) {
         const skipped = (data.skippedLocal as string[] | undefined) ?? []
         setStatus(skipped.length > 0
-          ? { ok: true, text: `${t('syncBackupOk')}（${skipped.length} 个本地插件已跳过：${skipped.join('、')}）` }
-          : { ok: true, text: t('syncBackupOk') })
+          ? { ok: true, text: `${t('syncBackupOk')}（${skipped.length} 个本地插件未备份：${skipped.join('、')}）` }
+          : { ok: true, text: includeLocal ? `${t('syncBackupOk')}（含本地插件文件）` : t('syncBackupOk') })
       } else {
         setStatus({ ok: false, text: (data.error as SyncError)?.message || '备份失败' })
       }
@@ -136,16 +138,32 @@ export function SyncTab({ t }: SyncTabProps) {
       const r = await fetch('/plugin-manager/sync-pull', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
       const data = await r.json()
       if (data.ok && data.diff) {
-        const toInstall = (data.diff.toInstall as unknown[]).length
-        const already = (data.diff.alreadyInstalled as unknown[]).length
-        if (toInstall === 0) {
+        const toInstall = (data.diff.toInstall as any[]) ?? []
+        const already = (data.diff.alreadyInstalled as any[])?.length ?? 0
+        const localIncluded = (data.manifest?.localPlugins ?? null) != null && Object.keys(data.manifest.localPlugins ?? {}).length > 0
+        const localCount = localIncluded ? Object.keys(data.manifest.localPlugins).length : 0
+        if (toInstall.length === 0) {
           setStatus({ ok: true, text: `已是最新，无需还原（${already} 个已存在）` })
         } else {
-          const ok = window.confirm(`发现 ${toInstall} 个插件可还原，${already} 个已存在。\n\n是否执行还原？`)
+          const ok = window.confirm(`发现 ${toInstall.length} 个插件可还原，${already} 个已存在。\n${localCount > 0 ? `其中 ${localCount} 个本地插件将自动还原文件。` : ''}\n\n是否执行还原？`)
           if (ok) {
-            // Note: actual restore install happens via the diff-confirmed route;
-            // here we report the diff summary as the restore confirmation step.
-            setStatus({ ok: true, text: `可还原 ${toInstall} 个插件（已存在 ${already} 个）` })
+            // 1. Restore packed local plugin files (if the manifest carries them)
+            let localRestored = 0
+            if (localCount > 0 && data.manifest) {
+              const lr = await fetch('/plugin-manager/sync-restore-local', {
+                method: 'POST', headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ manifest: data.manifest }),
+              })
+              const lrData = await lr.json()
+              localRestored = lrData.restored?.length ?? 0
+            }
+            // 2. Online plugins: instruct the user (market install or dsh CLI)
+            const onlineNames = toInstall.filter((p: any) => p.local !== true).map((p: any) => p.name)
+            const msg = [`已还原 ${localRestored} 个本地插件。`]
+            if (onlineNames.length > 0) {
+              msg.push(`另有 ${onlineNames.length} 个插件可从市场安装：${onlineNames.join('、')}`)
+            }
+            setStatus({ ok: true, text: msg.join('\n') })
           } else {
             setStatus({ ok: false, text: '已取消还原' })
           }

@@ -8,7 +8,7 @@
  * same-origin POSTs and only sources present in the curated registry.
  */
 
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { loadRegistry } from './registry.ts'
@@ -28,10 +28,34 @@ import { restartAllowed, scheduleRestart, trustedRestartRequest } from './restar
 import { verifyActivation } from './verify.ts'
 import { enqueueOp, waitForTurn, settleOp, isRunning, listOps, killOp, clearOps, appendOpOutput, findActiveOp } from './op-queue.ts'
 import { classifyProvenance } from './provenance.ts'
-import { exportSyncManifest, readSyncConfig, writeSyncConfig, diffManifest, restoreTarget, testConnection, pushManifest, pullManifest, validateConfig, type SyncManifest } from './sync.ts'
+import { exportSyncManifest, readSyncConfig, writeSyncConfig, diffManifest, restoreTarget, testConnection, pushManifest, pullManifest, validateConfig, unpackLocalPlugin, type SyncManifest } from './sync.ts'
 
 export type { LoaderEntry } from './themes.ts'
 export type { UpdateStatus } from './updates.ts'
+
+/**
+ * Ensure a plugin is registered in the profile's own cordis.patch.yml via an
+ * `- insert:` entry (the mechanism used for manually deployed plugins like
+ * client-only ones that have no dsh.bundle.patch). Idempotent.
+ */
+function ensurePatchInsert(profile: string, name: string): void {
+  try {
+    const file = join(profileDir(profile), 'cordis.patch.yml')
+    let yaml = ''
+    try { yaml = readFileSync(file, 'utf8') } catch { /* created below */ }
+    // Skip when already inserted
+    if (new RegExp(`- insert:[\\s\\S]*?name:\\s*['"]?${escapeRegExp(name)}['"]?\\s*$`, 'm').test(yaml)) return
+    const insertBlock = `\n- insert:\n    - id: ${name}\n      name: '${name}'\n`
+    writeFileSync(file, yaml.replace(/\n?$/, '\n') + insertBlock)
+  } catch (error) {
+    logEvent('error', 'sync-restore', `ensurePatchInsert(${name}) failed: ${String(error)}`)
+  }
+}
+
+/** Escape a string for use inside a RegExp. */
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
 export interface WebServerService {
   register(route: {
@@ -367,6 +391,37 @@ export function mountMarketRoutes(host: MarketHost, config: MarketConfig): () =>
         } else if (result.manifest) {
           const diff = diffManifest(result.manifest, config.profile)
           sendJson(response, 200, { ok: true, manifest: result.manifest, diff, source: result.source })
+        }
+      },
+    }),
+    // POST /plugin-manager/sync-restore-local — restore packed local plugins
+    host.webServer.register({
+      kind: 'exact',
+      path: '/plugin-manager/sync-restore-local',
+      handler: async (request, response) => {
+        if (!sameOrigin(request)) { sendJson(response, 403, { error: 'untrusted origin' }); return }
+        try {
+          const body = (await readJsonBody(request)) as { manifest?: SyncManifest }
+          const manifest = body.manifest
+          if (!manifest || !manifest.localPlugins || Object.keys(manifest.localPlugins).length === 0) {
+            sendJson(response, 200, { ok: true, restored: [], skipped: [] })
+            return
+          }
+          const restored: string[] = []
+          const skipped: string[] = []
+          for (const [name, files] of Object.entries(manifest.localPlugins)) {
+            const ok = unpackLocalPlugin(config.profile, name, files)
+            if (ok) {
+              // Register the plugin into the profile so dsh loads it on next boot
+              ensurePatchInsert(config.profile, name)
+              restored.push(name)
+            } else {
+              skipped.push(name)
+            }
+          }
+          sendJson(response, 200, { ok: true, restored, skipped })
+        } catch (error) {
+          sendJson(response, 500, { error: error instanceof Error ? error.message : String(error) })
         }
       },
     }),

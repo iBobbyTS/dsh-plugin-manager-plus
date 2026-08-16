@@ -15,8 +15,8 @@
  * - Repository not accessible
  * - Manifest format validation
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
+import { join, relative, sep } from 'node:path'
 import { readInstalled, readInstalledVersion, readInstalledRepo, readLockCommits, profileDir } from './profile.ts'
 import { logEvent } from './log.ts'
 
@@ -54,6 +54,8 @@ export interface SyncManifest {
     /** Human-readable hint for manual restore. */
     localHint?: string
   }>
+  /** Full file payloads of local-only plugins (path → base64 content). */
+  localPlugins?: Record<string, Record<string, string>>
 }
 
 export interface SyncError {
@@ -279,9 +281,9 @@ export function exportSyncManifest(profile: string, profileName: string, include
     const hasSource = gh !== null || npm !== null || manifestRepo !== null
     const isLocal = (spec.startsWith('bundles:') || spec.startsWith('link:') || spec.startsWith('file:')) && !hasSource
     const localHint = isLocal
-      ? (spec.startsWith('bundles:')
-          ? '已通过 bundle 部署，需手动复制 node_modules 目录 / deployed as a bundle — copy the node_modules directory manually'
-          : '本地安装，无法通过 GitHub 或 npm 自动还原 / locally installed — cannot auto-restore from GitHub or npm')
+      ? (includeLocal
+          ? '本地插件，文件已包含在清单中，可自动还原 / local plugin — files included in the manifest, auto-restorable'
+          : '本地插件，未包含文件，还原时需手动处理 / local plugin — files not included, manual restore needed')
       : undefined
 
     // Skip local-only plugins unless explicitly included
@@ -295,12 +297,75 @@ export function exportSyncManifest(profile: string, profileName: string, include
     })
   }
 
+  // When including local plugins, pack their full file payloads (path → base64)
+  // so they can be restored without any GitHub/npm source.
+  const localPlugins: SyncManifest['localPlugins'] = {}
+  if (includeLocal) {
+    for (const plugin of plugins) {
+      if (plugin.local !== true) continue
+      const payload = packLocalPlugin(profile, plugin.name)
+      if (payload !== null && Object.keys(payload).length > 0) {
+        localPlugins[plugin.name] = payload
+      }
+    }
+  }
+
   return {
     format: 'dsh-plugin-manifest',
     version: 1,
     generatedAt: new Date().toISOString(),
     dsh: { version: process.version, profile: profileName },
     plugins,
+    ...(Object.keys(localPlugins).length > 0 ? { localPlugins } : {}),
+  }
+}
+
+/**
+ * Pack a local plugin's files from the profile's node_modules into a
+ * path → base64 map (including nested dependencies under its node_modules,
+ * so the restore is complete without any registry access).
+ * @returns the file map, or null when the package directory is missing.
+ */
+export function packLocalPlugin(profile: string, name: string): Record<string, string> | null {
+  const pkgDir = join(profileDir(profile), 'node_modules', name)
+  if (!existsSync(pkgDir)) return null
+  const files: Record<string, string> = {}
+  const walk = (dir: string): void => {
+    let entries: import('node:fs').Dirent[] = []
+    try { entries = readdirSync(dir, { withFileTypes: true }) } catch { return }
+    for (const entry of entries) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        walk(full)
+      } else if (entry.isFile()) {
+        try {
+          const rel = relative(pkgDir, full).split(sep).join('/')
+          files[rel] = readFileSync(full).toString('base64')
+        } catch { /* skip unreadable file */ }
+      }
+    }
+  }
+  walk(pkgDir)
+  return Object.keys(files).length > 0 ? files : null
+}
+
+/**
+ * Restore a packed local plugin from the manifest into the profile's
+ * node_modules. Returns the plugin's directory on success or null on failure.
+ */
+export function unpackLocalPlugin(profile: string, name: string, files: Record<string, string>): boolean {
+  try {
+    const pkgDir = join(profileDir(profile), 'node_modules', name)
+    for (const [relPath, b64] of Object.entries(files)) {
+      const target = join(pkgDir, ...relPath.split('/'))
+      const targetDir = target.slice(0, Math.max(target.lastIndexOf('/'), target.lastIndexOf('\\')))
+      if (targetDir.length > 0) mkdirSync(targetDir, { recursive: true })
+      writeFileSync(target, Buffer.from(b64, 'base64'))
+    }
+    return true
+  } catch (error) {
+    logEvent('error', 'sync-restore', `unpack local plugin ${name} failed: ${String(error)}`)
+    return false
   }
 }
 
@@ -370,6 +435,13 @@ export async function pushManifest(config: SyncConfig, manifest: SyncManifest): 
   const content = JSON.stringify(manifest, null, 2)
   const encoded = Buffer.from(content, 'utf8').toString('base64')
   const path = MANIFEST_FILENAME
+
+  // GitHub contents API caps file size at 100 MB raw; base64 inflates ~33%.
+  // Guard at 60 MB raw so the base64 payload stays under the API limit.
+  const rawBytes = Buffer.byteLength(content)
+  if (rawBytes > 60 * 1024 * 1024) {
+    return { error: { code: 'unknown', message: `清单过大（${(rawBytes / 1024 / 1024).toFixed(1)} MB > 60 MB 上限），请移除部分本地插件后重试 / Manifest too large (${(rawBytes / 1024 / 1024).toFixed(1)} MB > 60 MB limit) — remove some local plugins and retry`, retryable: false, hint: '删除部分体积大的本地插件，或改用源码仓库安装' } }
+  }
 
   try {
     // Check if file already exists (to get SHA for update)
