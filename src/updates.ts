@@ -12,6 +12,12 @@ export interface UpdateStatus {
   current: string | null
   latest: string | null
   updateAvailable: boolean
+  /** Verified GitHub owner/repo for Git installations, not npm package metadata. */
+  repo?: string
+  /** Commits on remote HEAD that are absent from the installed revision. Null when not verifiable. */
+  behind?: number | null
+  /** Commits on the installed revision that are absent from remote HEAD (divergence). */
+  ahead?: number | null
 }
 
 const UPDATES_TTL_MS = 30 * 60 * 1000
@@ -57,6 +63,12 @@ export async function latestPublishedRecently(name: string, windowMs = 26 * 60 *
   }
 }
 
+/** Recognize GitHub dependency sources; never infer a Git source from npm package metadata. */
+export function githubRepoFromSpec(spec: string): string | null {
+  const match = /^(?:github:|(?:git\+)?https:\/\/github\.com\/|git\+ssh:\/\/git@github\.com\/|git@github\.com:)([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+?)(?:\.git)?(?:#.*)?$/.exec(spec)
+  return match?.[1] ?? null
+}
+
 /** Per-plugin update checks; a failed check reports no update rather than failing the listing. */
 export async function checkUpdates(profile: string, force = false): Promise<Record<string, UpdateStatus>> {
   if (!force && updatesCache && Date.now() - updatesCache.at < UPDATES_TTL_MS) return updatesCache.data
@@ -69,14 +81,39 @@ export async function checkUpdates(profile: string, force = false): Promise<Reco
       result[name] = { kind: 'linked', version, current: null, latest: null, updateAvailable: false }
       return
     }
-    const gh = /^(?:github:)?([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+?)(?:#.*)?$/.exec(spec)
+    const gh = githubRepoFromSpec(spec)
     try {
-      if (spec.startsWith('github:') && gh !== null) {
-        const current = lockCommits.get(gh[1].toLowerCase()) ?? null
-        const head = (await fetchJson(`https://api.github.com/repos/${gh[1]}/commits/HEAD`)) as { sha?: string }
-        const latest = typeof head.sha === 'string' ? head.sha : null
+      if (gh !== null) {
+        const current = lockCommits.get(gh.toLowerCase()) ?? null
+        const head = (await fetchJson(`https://api.github.com/repos/${gh}/commits/HEAD`)) as { sha?: string }
+        const latest = typeof head.sha === 'string' && /^[0-9a-f]{40}$/i.test(head.sha) ? head.sha : null
+        let behind: number | null = null
+        let ahead: number | null = null
+        if (current !== null && latest !== null) {
+          if (current === latest) {
+            behind = 0
+            ahead = 0
+          } else if (/^[0-9a-f]{40}$/i.test(current)) {
+            try {
+              // ahead_by counts commits in the remote head missing from our installed base.
+              // behind_by counts commits in the installed base missing from remote HEAD.
+              const comparison = (await fetchJson(
+                `https://api.github.com/repos/${gh}/compare/${current}...${latest}?per_page=1`,
+              )) as { ahead_by?: unknown; behind_by?: unknown }
+              if (typeof comparison.ahead_by === 'number'
+                && typeof comparison.behind_by === 'number'
+                && Number.isSafeInteger(comparison.ahead_by) && comparison.ahead_by >= 0
+                && Number.isSafeInteger(comparison.behind_by) && comparison.behind_by >= 0) {
+                behind = comparison.ahead_by
+                ahead = comparison.behind_by
+              }
+            } catch {
+              // Missing history, network failures, and API rate limits are "unknown", not zero.
+            }
+          }
+        }
         result[name] = {
-          kind: 'github', version, current, latest,
+          kind: 'github', version, current, latest, repo: gh, behind, ahead,
           updateAvailable: current !== null && latest !== null && current !== latest,
         }
       } else {
@@ -88,7 +125,7 @@ export async function checkUpdates(profile: string, force = false): Promise<Reco
         }
       }
     } catch {
-      result[name] = { kind: spec.startsWith('github:') ? 'github' : 'npm', version, current: null, latest: null, updateAvailable: false }
+      result[name] = { kind: gh !== null ? 'github' : 'npm', version, current: null, latest: null, repo: gh ?? undefined, behind: gh !== null ? null : undefined, ahead: gh !== null ? null : undefined, updateAvailable: false }
     }
   }))
   updatesCache = { at: Date.now(), data: result }

@@ -34,7 +34,12 @@ export type InstalledMap = Record<string, string>
 export interface UpdateStatus {
   updateAvailable?: boolean
   version?: string
-  kind?: string
+  kind?: 'github' | 'npm' | 'linked'
+  current?: string | null
+  latest?: string | null
+  repo?: string
+  behind?: number | null
+  ahead?: number | null
 }
 
 /** Poll payload from /dsh-market/status. */

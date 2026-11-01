@@ -29,6 +29,7 @@ dsh plugin --profile web add dsh-plugin-manager-plus
 
 - **已安装**——带激活状态（已生效/需重启/未生效/损坏/缺失）、版本、来源的分组视图
 - **更新**——逐插件检测（npm 版本或锁定 commit vs HEAD），一键更新或全部更新
+- **来源版本对比**——npm 显示已安装/最新版本；GitHub 安装显示已安装/最新 SHA、GitHub Compare 返回的准确落后提交数，并提供单次提交和完整比较链接。历史分叉时额外显示本地独有提交数；API 查询失败时显示未知，不猜测数量。更新检查缓存 30 分钟，更新仍需手动触发。
 - **启用/停用**——不卸载即可开关插件（通过 `dsh.market.disabled` 持久化）
 - **卸载**——两步确认防误触；本次会话装的即点即卸
 - **本地插件标识**——没有 GitHub 来源的插件显示灰色 **本地** 徽标与来源（如 `bundles:`、`patch:`）；manifest 里声明了 `repository` 字段的插件会自动解析出 GitHub 链接

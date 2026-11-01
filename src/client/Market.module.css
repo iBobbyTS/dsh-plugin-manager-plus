@@ -110,3 +110,9 @@
 .linkName:hover{color:var(--dsw-alias-brand-primary,#4f6ef7);text-decoration:underline}
 .localBadge{display:inline-block;font-size:10px;line-height:14px;padding:0 5px;border-radius:3px;background:var(--dsw-alias-bg-layer-2,#f3f4f6);border:1px solid var(--dsw-alias-border-l2,#d9dde3);color:var(--dsw-alias-label-secondary,#6b7280);font-weight:600;margin-left:4px;vertical-align:middle}
 .localSpec{color:var(--dsw-alias-label-tertiary,#9ca3af)}
+
+/* Installed-source revisions: wrap on narrow Settings panels without hiding SHA links. */
+.revisionMeta{display:flex;align-items:center;flex-wrap:wrap;column-gap:12px;row-gap:3px;margin-top:5px;font-size:11px;line-height:17px;color:var(--dsw-alias-label-secondary,#6b7280)}
+.revisionItem{white-space:nowrap}
+.revisionLink{font-family:ui-monospace,Menlo,monospace;color:var(--dsw-alias-brand-primary,#4f6ef7);text-decoration:none}
+.revisionLink:hover{text-decoration:underline}

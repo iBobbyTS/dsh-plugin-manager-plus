@@ -29,6 +29,7 @@ Restart `dsh web`, then open **Settings → Plugin Manager**.
 
 - **Installed** — grouped view with activation state (live / restart / inert / broken / missing), version, and source
 - **Update** — per-plugin checks (npm version or pinned commit vs HEAD), one-click update or update-all
+- **Source revisions** — npm installs show installed/latest versions; GitHub installs show installed/latest SHAs, real behind counts from GitHub Compare, and links to each commit and the full comparison. Divergent history shows extra local commits; failed API checks show an unknown distance rather than a guessed number. Checks are cached for 30 minutes; updates still run only when clicked.
 - **Enable / Disable** — toggle a plugin without uninstalling (persisted via `dsh.market.disabled`)
 - **Uninstall** — two-step confirm; this-session installs are removed live
 - **Local plugin marking** — plugins without a GitHub source show a **本地** badge and a grayed source (e.g. `bundles:`, `patch:`); plugins whose manifest declares a `repository` field resolve to their GitHub page automatically

@@ -290,3 +290,47 @@ describe('P0-2 activation states in the Installed tab', () => {
     expect(screen.getByText(en.stateRestart).textContent).toContain(en.stateRestart)
   })
 })
+
+describe('installed source revisions', () => {
+  it('shows npm versions and GitHub SHAs, behind count, and an exact compare link', async () => {
+    const installedSha = 'a'.repeat(40)
+    const latestSha = 'b'.repeat(40)
+    stubFetch({
+      '/plugin-manager/installed': {
+        profile: 'web', installed: {
+          'dsh-loop': '^1.0.0',
+          'dsh-notify': 'github:bob/dsh-notify',
+        }, live: [],
+      },
+      '/plugin-manager/updates': { updates: {
+        'dsh-loop': { kind: 'npm', version: '1.0.0', current: '1.0.0', latest: '1.2.0', updateAvailable: true },
+        'dsh-notify': { kind: 'github', version: '0.1.0', current: installedSha, latest: latestSha, repo: 'bob/dsh-notify', behind: 3, ahead: 0, updateAvailable: true },
+      } },
+    })
+    render(<MarketSection {...props()} />)
+    await screen.findByText('dsh-loop')
+    fireEvent.click(screen.getByRole('button', { name: /Installed/ }))
+    expect(await screen.findByText('Behind 3 commits')).toBeTruthy()
+    expect(screen.getByText('Installed version: 1.0.0')).toBeTruthy()
+    expect(screen.getByText('Latest version: 1.2.0')).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Compare commits' }).getAttribute('href'))
+      .toBe(`https://github.com/bob/dsh-notify/compare/${installedSha}...${latestSha}`)
+    expect(screen.getByRole('link', { name: installedSha.slice(0, 7) }).getAttribute('href'))
+      .toBe(`https://github.com/bob/dsh-notify/commit/${installedSha}`)
+  })
+
+  it('does not invent a behind count or unsafe compare link when the source is unknown', async () => {
+    stubFetch({
+      '/plugin-manager/installed': { profile: 'web', installed: { 'dsh-notify': 'github:bob/dsh-notify' }, live: [] },
+      '/plugin-manager/updates': { updates: { 'dsh-notify': {
+        kind: 'github', version: '0.1.0', current: null, latest: 'a'.repeat(40),
+        repo: 'bob/dsh-notify', behind: null, ahead: null, updateAvailable: false,
+      } } },
+    })
+    render(<MarketSection {...props()} />)
+    await screen.findByText('dsh-loop')
+    fireEvent.click(screen.getByRole('button', { name: /Installed/ }))
+    expect(await screen.findByText('Commit distance unknown')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Compare commits' })).toBeNull()
+  })
+})

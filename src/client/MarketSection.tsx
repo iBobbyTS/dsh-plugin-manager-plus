@@ -1127,6 +1127,14 @@ export function MarketSection(props: MarketSectionProps) {
                   // Priority: server-resolved repo URL (from plugin manifest
                   // repository field) → curated registry entry → github: spec
                   const repoUrl = repoUrls[name] ?? (entry !== undefined ? entry.url : ghSpec !== null ? 'https://github.com/' + ghSpec[1] : null)
+                  // Commit links must use the verified installation source, not a similarly named catalog entry.
+                  const gitRepo = status?.kind === 'github' ? (status.repo ?? ghSpec?.[1]) : null
+                  const commitRepo = gitRepo && /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(gitRepo)
+                    ? 'https://github.com/' + gitRepo : null
+                  const currentSha = status?.kind === 'github' && typeof status.current === 'string' && /^[0-9a-f]{40}$/i.test(status.current) ? status.current : null
+                  const latestSha = status?.kind === 'github' && typeof status.latest === 'string' && /^[0-9a-f]{40}$/i.test(status.latest) ? status.latest : null
+                  const compareUrl = commitRepo !== null && currentSha !== null && latestSha !== null
+                    ? `${commitRepo}/compare/${currentSha}...${latestSha}` : null
                   return (
                     <div key={name} className={css.irow}>
                       <div style={{ minWidth: 0 }}>
@@ -1140,6 +1148,35 @@ export function MarketSection(props: MarketSectionProps) {
                         {repoUrl !== null
                           ? <a className={`${css.spec} ${css.src}`} href={repoUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block' }}>{specText} ↗</a>
                           : <div className={`${css.spec} ${css.localSpec}`}>{specText}</div>}
+                        {status?.kind === 'github' && (
+                          <div className={css.revisionMeta}>
+                            <span className={css.revisionItem}>
+                              {t('installedCommit')}: {currentSha !== null && commitRepo !== null
+                                ? <a className={css.revisionLink} href={`${commitRepo}/commit/${currentSha}`} target="_blank" rel="noreferrer" title={currentSha}>{currentSha.slice(0, 7)}</a>
+                                : t('revisionUnknown')}
+                            </span>
+                            <span className={css.revisionItem}>
+                              {t('latestCommit')}: {latestSha !== null && commitRepo !== null
+                                ? <a className={css.revisionLink} href={`${commitRepo}/commit/${latestSha}`} target="_blank" rel="noreferrer" title={latestSha}>{latestSha.slice(0, 7)}</a>
+                                : t('revisionUnknown')}
+                            </span>
+                            <span>{typeof status.behind === 'number'
+                              ? t('behindCommits').replace('{0}', String(status.behind))
+                              : t('behindUnknown')}</span>
+                            {typeof status.ahead === 'number' && status.ahead > 0 && (
+                              <span>{t('aheadCommits').replace('{0}', String(status.ahead))}</span>
+                            )}
+                            {compareUrl !== null && (
+                              <a className={css.revisionLink} href={compareUrl} target="_blank" rel="noreferrer">{t('compareCommits')}</a>
+                            )}
+                          </div>
+                        )}
+                        {status?.kind === 'npm' && (
+                          <div className={css.revisionMeta}>
+                            <span>{t('installedVersionLabel')}: {status.current ?? status.version ?? t('revisionUnknown')}</span>
+                            <span>{t('latestVersionLabel')}: {status.latest ?? t('revisionUnknown')}</span>
+                          </div>
+                        )}
                         {entry !== undefined && (
                           <div className={`${css.desc} ${css.descTight}`}>
                             {(entry.description && (entry.description[lang] || entry.description.en)) || ''}
